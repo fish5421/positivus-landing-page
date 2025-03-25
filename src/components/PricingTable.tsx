@@ -5,14 +5,14 @@ import posthog from 'posthog-js';
 import { trackCTA } from '../lib/trackCTA';
 import FormModal from './forms/FormModal';
 import OnboardingModal from './onboarding/OnboardingModal';
-import { PricingTier, BillingCycle } from './onboarding/OnboardingContext';
+import { PricingTier as PricingTierType, BillingCycle } from './onboarding/OnboardingContext';
 
 interface PricingFeature {
   text: string;
   included: boolean;
 }
 
-interface PricingTier {
+interface PricingOption {
   name: string;
   description: string;
   price: {
@@ -28,7 +28,7 @@ interface PricingTier {
 interface PricingTableProps {
   heading: string;
   subheading?: string;
-  tiers: PricingTier[];
+  tiers: PricingOption[];
   guaranteeText?: string;
   className?: string;
 }
@@ -43,7 +43,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<PricingTier>('Growth');
+  const [selectedTier, setSelectedTier] = useState<PricingTierType>('Growth');
 
   const openContactModal = () => {
     setIsContactModalOpen(true);
@@ -53,7 +53,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     setIsContactModalOpen(false);
   };
   
-  const openOnboardingModal = (tier: PricingTier) => {
+  const openOnboardingModal = (tier: PricingTierType) => {
     setSelectedTier(tier);
     setIsOnboardingModalOpen(true);
   };
@@ -159,7 +159,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       openContactModal();
                     } else {
                       e.preventDefault();
-                      openOnboardingModal(tier.name as PricingTier);
+                      openOnboardingModal(tier.name as PricingTierType);
                     }
                     trackCTA('Plan Selection', 'Pricing Table', {
                       tier_name: tier.name,
