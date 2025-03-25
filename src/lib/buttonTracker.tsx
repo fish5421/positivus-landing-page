@@ -7,9 +7,9 @@ export function ButtonTracker() {
   useEffect(() => {
     if (typeof window === 'undefined') return
     
-    const handleButtonClick = (e) => {
+    const handleButtonClick = (e: MouseEvent) => {
       // Find the button that was clicked or a parent button
-      let target = e.target
+      let target = e.target as HTMLElement
       while (target && target !== document.body) {
         if (target.tagName === 'BUTTON' || (target.tagName === 'A' && target.getAttribute('href'))) {
           // Get information about the button
@@ -31,27 +31,27 @@ export function ButtonTracker() {
           
           break
         }
-        target = target.parentElement
+        target = target.parentElement as HTMLElement
       }
     }
     
     // Helper to find the parent section of an element
-    const findParentSection = (element) => {
+    const findParentSection = (element: HTMLElement): string => {
       let current = element
       while (current && current !== document.body) {
         if (current.tagName === 'SECTION' && current.id) {
           return current.id
         }
-        current = current.parentElement
+        current = current.parentElement as HTMLElement
       }
       return 'Unknown section'
     }
     
     // Add click listener to the document to capture all button clicks
-    document.addEventListener('click', handleButtonClick)
+    document.addEventListener('click', handleButtonClick as EventListener)
     
     return () => {
-      document.removeEventListener('click', handleButtonClick)
+      document.removeEventListener('click', handleButtonClick as EventListener)
     }
   }, [])
   
