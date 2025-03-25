@@ -1,26 +1,208 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --foreground: #191A23;
+  --primary: #B9FF66;
+  --primary-dark: #9FE258;
+  --gray-100: #F5F5F5;
+  --gray-300: #D9D9D9;
+  --gray-500: #8B8B8B;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-space-grotesk), sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* Add smooth scrolling for all browsers */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px; /* Adds padding for anchor links to compensate for fixed header */
+}
+
+/* Add intersection observer animations */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Add responsive image handling */
+.responsive-image {
+  max-width: 100%;
+  height: auto;
+}
+
+@layer components {
+  .container {
+    @apply max-w-[1440px] px-4 md:px-8 lg:px-20 mx-auto;
+  }
+  
+  .btn {
+    @apply px-8 py-4 rounded-full font-medium transition-all duration-300 text-base inline-block;
+  }
+  
+  .btn-primary {
+    @apply bg-[#B9FF66] text-[#191A23] hover:bg-[#9FE258];
+  }
+  
+  .btn-outline {
+    @apply border border-[#191A23] hover:bg-[#191A23] hover:text-white;
+  }
+  
+  .section {
+    @apply py-16 md:py-24;
+  }
+  
+  .heading-xl {
+    @apply text-4xl md:text-5xl lg:text-6xl font-medium leading-tight;
+  }
+  
+  .heading-lg {
+    @apply text-3xl md:text-4xl lg:text-5xl font-medium leading-tight;
+  }
+  
+  .heading-md {
+    @apply text-2xl md:text-3xl font-medium;
+  }
+  
+  .paragraph {
+    @apply text-base md:text-lg leading-relaxed;
+  }
+  
+  /* New component styles */
+  .card {
+    @apply rounded-3xl border border-gray-200 overflow-hidden shadow-sm transition-shadow hover:shadow-md;
+  }
+  
+  .feature-icon {
+    @apply w-12 h-12 flex items-center justify-center rounded-full bg-[#B9FF66] text-[#191A23];
+  }
+  
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold mb-4;
+  }
+  
+  .section-subtitle {
+    @apply text-lg md:text-xl text-gray-700 max-w-3xl mx-auto;
+  }
+  
+  /* Header styles */
+  .header-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Page section navigation styles */
+  .nav-link {
+    @apply relative pb-1 transition-colors;
+  }
+  
+  .nav-link:after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 ease-in-out;
+  }
+  
+  .nav-link:hover:after, .nav-link.active:after {
+    @apply w-full;
+  }
+  
+  /* Mobile Menu Override */
+  .mobile-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  /* Price toggle styles */
+  .price-toggle {
+    @apply relative inline-flex items-center cursor-pointer;
+  }
+  
+  .price-toggle-bg {
+    @apply w-14 h-7 bg-gray-200 rounded-full;
+  }
+  
+  .price-toggle-circle {
+    @apply absolute w-5 h-5 bg-white rounded-full transition-transform;
+  }
+  
+  .price-toggle-active .price-toggle-circle {
+    transform: translateX(28px);
+  }
+  
+  .price-toggle-active .price-toggle-bg {
+    @apply bg-[#B9FF66];
+  }
+}
+
+/* Form animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Modal improvements */
+.modal-open {
+  overflow: auto !important;
+  padding-right: 0 !important;
+}
+
+/* Ensure modals are always positioned correctly even when scrolled */
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+/* Allow scrolling within modals when they're taller than the viewport */
+.modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 2rem 0;
+  position: relative;
+  border-radius: 0.75rem;
+}
+
+/* Responsive fixes for smaller screens */
+@media (max-width: 640px) {
+  .heading-xl {
+    @apply text-3xl;
+  }
+  
+  .heading-lg {
+    @apply text-2xl;
+  }
+  
+  .testimonial-grid {
+    @apply grid-cols-1;
+  }
+  
+  .pricing-grid {
+    @apply grid-cols-1 gap-8;
+  }
 }

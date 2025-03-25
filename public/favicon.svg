@@ -1,0 +1,322 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+  <!-- Definitions for reusable elements -->
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="background-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1565C0" />
+      <stop offset="50%" stop-color="#1E88E5" />
+      <stop offset="100%" stop-color="#42A5F5" />
+    </linearGradient>
+    
+    <radialGradient id="face-gradient" cx="50%" cy="50%" r="50%" fx="45%" fy="45%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="95%" stop-color="#F8F8F8" />
+      <stop offset="100%" stop-color="#EFEFEF" />
+    </radialGradient>
+    
+    <!-- Filters -->
+    <filter id="soft-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+      <feOffset dx="2" dy="2" result="offsetblur" />
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3" />
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    
+    <filter id="texture" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.15" numOctaves="2" result="noise" />
+      <feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.1 0" />
+      <feComposite operator="in" in2="SourceGraphic" />
+      <feComposite operator="over" in2="SourceGraphic" />
+    </filter>
+    
+    <pattern id="tech-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="1" fill="#1E88E5" />
+    </pattern>
+  </defs>
+
+  <!-- Background layers -->
+  <g id="background">
+    <!-- Base circle with gradient -->
+    <circle cx="320" cy="320" r="310" fill="url(#background-gradient)" />
+    
+    <!-- Subtle pattern overlay -->
+    <circle cx="320" cy="320" r="310" fill="url(#tech-pattern)" opacity="0.1" />
+    
+    <!-- Background accent elements -->
+    <g opacity="0.15">
+      <circle cx="320" cy="320" r="280" fill="none" stroke="#FFFFFF" stroke-width="1" />
+      <circle cx="320" cy="320" r="250" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-dasharray="10,5" />
+    </g>
+  </g>
+  
+  <!-- Cow face structure -->
+  <g id="cow-face" filter="url(#soft-shadow)">
+    <!-- Base face shape - more complex with multiple curves -->
+    <path d="M320 150 
+             C220 150, 140 230, 140 350 
+             C140 470, 220 500, 320 500 
+             C420 500, 500 470, 500 350 
+             C500 230, 420 150, 320 150 
+             Z" 
+          fill="url(#face-gradient)" />
+    
+    <!-- Add subtle texture to the face -->
+    <path d="M320 150 
+             C220 150, 140 230, 140 350 
+             C140 470, 220 500, 320 500 
+             C420 500, 500 470, 500 350 
+             C500 230, 420 150, 320 150 
+             Z" 
+          fill="url(#face-gradient)" 
+          filter="url(#texture)" 
+          opacity="0.1" />
+  </g>
+  
+  <!-- Ears -->
+  <g id="ears">
+    <!-- Left ear -->
+    <g id="left-ear">
+      <path d="M140 250 
+               C120 200, 80 180, 60 210 
+               C40 240, 80 280, 140 250 
+               Z" 
+            fill="url(#face-gradient)" 
+            filter="url(#soft-shadow)" />
+      
+      <!-- Inner ear detail -->
+      <path d="M130 240 
+               C115 210, 85 195, 70 215 
+               C60 235, 90 255, 120 240 
+               Z" 
+            fill="#1E88E5" 
+            opacity="0.2" />
+    </g>
+    
+    <!-- Right ear -->
+    <g id="right-ear">
+      <path d="M500 250 
+               C520 200, 560 180, 580 210 
+               C600 240, 560 280, 500 250 
+               Z" 
+            fill="url(#face-gradient)" 
+            filter="url(#soft-shadow)" />
+      
+      <!-- Inner ear detail -->
+      <path d="M510 240 
+               C525 210, 555 195, 570 215 
+               C580 235, 550 255, 520 240 
+               Z" 
+            fill="#1E88E5" 
+            opacity="0.2" />
+    </g>
+  </g>
+  
+  <!-- Eyes -->
+  <g id="eyes">
+    <!-- Left eye group -->
+    <g id="left-eye">
+      <!-- Eye white -->
+      <ellipse cx="240" cy="300" rx="35" ry="30" fill="white" filter="url(#soft-shadow)" />
+      
+      <!-- Iris -->
+      <circle cx="240" cy="300" r="18" fill="url(#background-gradient)" />
+      
+      <!-- Pupil -->
+      <circle cx="240" cy="300" r="8" fill="#0D47A1" />
+      
+      <!-- Highlight -->
+      <circle cx="232" cy="292" r="5" fill="white" opacity="0.8" />
+      
+      <!-- Eyelids -->
+      <path d="M210 285 
+               Q240 270, 270 285" 
+            fill="none" 
+            stroke="#EFEFEF" 
+            stroke-width="5" 
+            opacity="0.6" 
+            stroke-linecap="round" />
+            
+      <path d="M210 315 
+               Q240 330, 270 315" 
+            fill="none" 
+            stroke="#EFEFEF" 
+            stroke-width="5" 
+            opacity="0.6" 
+            stroke-linecap="round" />
+    </g>
+    
+    <!-- Right eye group -->
+    <g id="right-eye">
+      <!-- Eye white -->
+      <ellipse cx="400" cy="300" rx="35" ry="30" fill="white" filter="url(#soft-shadow)" />
+      
+      <!-- Iris -->
+      <circle cx="400" cy="300" r="18" fill="url(#background-gradient)" />
+      
+      <!-- Pupil -->
+      <circle cx="400" cy="300" r="8" fill="#0D47A1" />
+      
+      <!-- Highlight -->
+      <circle cx="392" cy="292" r="5" fill="white" opacity="0.8" />
+      
+      <!-- Eyelids -->
+      <path d="M370 285 
+               Q400 270, 430 285" 
+            fill="none" 
+            stroke="#EFEFEF" 
+            stroke-width="5" 
+            opacity="0.6" 
+            stroke-linecap="round" />
+            
+      <path d="M370 315 
+               Q400 330, 430 315" 
+            fill="none" 
+            stroke="#EFEFEF" 
+            stroke-width="5" 
+            opacity="0.6" 
+            stroke-linecap="round" />
+    </g>
+  </g>
+  
+  <!-- Nose and mouth area -->
+  <g id="nose-area">
+    <!-- Nose bridge -->
+    <path d="M320 320 
+             C300 330, 280 350, 280 380 
+             C280 410, 300 430, 320 430 
+             C340 430, 360 410, 360 380 
+             C360 350, 340 330, 320 320 
+             Z" 
+          fill="#F8F8F8" 
+          filter="url(#soft-shadow)" />
+    
+    <!-- Nose -->
+    <ellipse cx="320" cy="380" rx="40" ry="30" fill="url(#background-gradient)" filter="url(#soft-shadow)" />
+    
+    <!-- Nostrils - more detailed -->
+    <ellipse cx="305" cy="380" rx="12" ry="10" fill="white" opacity="0.7" transform="rotate(-10, 305, 380)" />
+    <ellipse cx="335" cy="380" rx="12" ry="10" fill="white" opacity="0.7" transform="rotate(10, 335, 380)" />
+    
+    <!-- Subtle mouth line -->
+    <path d="M300 420 
+             Q320 440, 340 420" 
+          fill="none" 
+          stroke="#1E88E5" 
+          stroke-width="3" 
+          opacity="0.5" 
+          stroke-linecap="round" />
+  </g>
+  
+  <!-- Cow spots/pattern -->
+  <g id="spots">
+    <!-- Left forehead spot -->
+    <path d="M220 220 
+             C200 210, 190 230, 200 250 
+             C210 270, 240 260, 230 240 
+             C225 225, 215 215, 220 220 
+             Z" 
+          fill="url(#background-gradient)" 
+          filter="url(#soft-shadow)" />
+    
+    <!-- Right forehead spot -->
+    <path d="M420 220 
+             C440 210, 450 230, 440 250 
+             C430 270, 400 260, 410 240 
+             C415 225, 425 215, 420 220 
+             Z" 
+          fill="url(#background-gradient)" 
+          filter="url(#soft-shadow)" />
+    
+    <!-- Cheek spot -->
+    <path d="M180 330 
+             C170 320, 165 340, 175 360 
+             C185 380, 205 370, 200 350 
+             C195 335, 185 325, 180 330 
+             Z" 
+          fill="url(#background-gradient)" 
+          filter="url(#soft-shadow)" />
+    
+    <!-- Other cheek spot -->
+    <path d="M460 330 
+             C470 320, 475 340, 465 360 
+             C455 380, 435 370, 440 350 
+             C445 335, 455 325, 460 330 
+             Z" 
+          fill="url(#background-gradient)" 
+          filter="url(#soft-shadow)" />
+    
+    <!-- Chin spot -->
+    <ellipse cx="320" cy="450" rx="30" ry="20" fill="url(#background-gradient)" filter="url(#soft-shadow)" />
+    
+    <!-- Small accent spots -->
+    <circle cx="270" cy="270" r="10" fill="url(#background-gradient)" filter="url(#soft-shadow)" />
+    <circle cx="370" cy="270" r="10" fill="url(#background-gradient)" filter="url(#soft-shadow)" />
+    <circle cx="290" cy="410" r="12" fill="url(#background-gradient)" filter="url(#soft-shadow)" />
+    <circle cx="350" cy="410" r="12" fill="url(#background-gradient)" filter="url(#soft-shadow)" />
+  </g>
+  
+  <!-- Tech-inspired decorative elements -->
+  <g id="tech-elements" opacity="0.15">
+    <!-- Circuit-like lines -->
+    <path d="M160 280 L120 280" stroke="#0D47A1" stroke-width="2" />
+    <path d="M180 320 L140 340" stroke="#0D47A1" stroke-width="2" />
+    <path d="M480 280 L520 280" stroke="#0D47A1" stroke-width="2" />
+    <path d="M460 320 L500 340" stroke="#0D47A1" stroke-width="2" />
+    
+    <!-- Data points -->
+    <circle cx="120" cy="280" r="4" fill="#0D47A1" />
+    <circle cx="140" cy="340" r="4" fill="#0D47A1" />
+    <circle cx="520" cy="280" r="4" fill="#0D47A1" />
+    <circle cx="500" cy="340" r="4" fill="#0D47A1" />
+    
+    <!-- Abstract tech elements -->
+    <rect x="105" y="270" width="10" height="20" rx="2" fill="#0D47A1" />
+    <rect x="130" y="330" width="10" height="20" rx="2" fill="#0D47A1" />
+    <rect x="525" y="270" width="10" height="20" rx="2" fill="#0D47A1" />
+    <rect x="505" y="330" width="10" height="20" rx="2" fill="#0D47A1" />
+  </g>
+  
+  <!-- Animation styles -->
+  <style>
+    @keyframes blink {
+      0%, 95%, 100% { transform: scaleY(1); }
+      97.5% { transform: scaleY(0.1); }
+    }
+    
+    #left-eye, #right-eye {
+      animation: blink 8s infinite;
+      transform-origin: center;
+    }
+    
+    @keyframes ear-wiggle {
+      0%, 90%, 100% { transform: rotate(0deg); }
+      92.5%, 95% { transform: rotate(-2deg); }
+      97.5% { transform: rotate(2deg); }
+    }
+    
+    #left-ear {
+      animation: ear-wiggle 12s infinite;
+      transform-origin: right bottom;
+    }
+    
+    #right-ear {
+      animation: ear-wiggle 12s infinite;
+      transform-origin: left bottom;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    
+    #cow-face {
+      animation: pulse 5s infinite ease-in-out;
+      transform-origin: center;
+    }
+  </style>
+</svg>
