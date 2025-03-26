@@ -11,9 +11,11 @@ import PricingTable from "../components/PricingTable";
 import AboutSection from "../components/AboutSection";
 import AccordionFAQ from "../components/AccordionFAQ";
 import Navigation from "../components/Navigation";
+import FreeSampleModal from "../components/FreeSampleModal";
 
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isFreeSampleModalOpen, setIsFreeSampleModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +29,14 @@ export default function Home() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  const openFreeSampleModal = () => {
+    setIsFreeSampleModalOpen(true);
+  };
+
+  const closeFreeSampleModal = () => {
+    setIsFreeSampleModalOpen(false);
+  };
 
   return (
     <div className="min-h-screen">
@@ -64,9 +74,12 @@ export default function Home() {
               Instantly enrich your mailing lists with Zillow's real estate data, helping you segment audiences and deliver targeted offers based on home values, ownership status, and more.
             </p>
             <div className="flex flex-col gap-4">
-              <a href="#pricing" className="inline-flex items-center justify-center px-8 py-4 bg-[#B9FF66] text-black font-medium rounded-lg hover:bg-opacity-90 transition-colors w-fit">
+              <button 
+                onClick={openFreeSampleModal}
+                className="inline-flex items-center justify-center px-8 py-4 bg-[#B9FF66] text-black font-medium rounded-lg hover:bg-opacity-90 transition-colors w-fit"
+              >
                 Get Your Free Sample
-              </a>
+              </button>
               
               <div className="flex flex-col gap-4 mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <p className="text-gray-700 italic">"By using the data to quickly create three segments, donations went from $9,000 in the previous year's mailing to $22,000 - an astonishing 144% increase!"</p>
@@ -407,6 +420,12 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      
+      {/* Free Sample Modal */}
+      <FreeSampleModal 
+        isOpen={isFreeSampleModalOpen} 
+        onClose={closeFreeSampleModal} 
+      />
     </div>
   );
 }
