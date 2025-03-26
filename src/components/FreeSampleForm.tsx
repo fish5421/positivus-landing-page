@@ -40,11 +40,19 @@ export default function FreeSampleForm({ onClose }: FreeSampleFormProps) {
       const data = await res.json();
       
       if (res.ok) {
-        setResponse({
-          status: 'success',
-          message: data.message || 'Success! Check your email for your free sample coupon.'
-        });
-        setEmail('');
+        // Even if the HTTP status is "ok", we need to check if the operation actually succeeded
+        if (data.success === false) {
+          setResponse({
+            status: 'error',
+            message: data.error || 'Unable to process your request.'
+          });
+        } else {
+          setResponse({
+            status: 'success',
+            message: data.message || 'Success! Check your email for your free sample coupon.'
+          });
+          setEmail('');
+        }
       } else {
         setResponse({
           status: 'error',
@@ -71,7 +79,9 @@ export default function FreeSampleForm({ onClose }: FreeSampleFormProps) {
       {response && (
         <div 
           className={`p-4 mb-4 rounded-lg ${
-            response.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            response.status === 'success' 
+              ? 'bg-green-100 text-green-800 border border-green-300' 
+              : 'bg-red-100 text-red-800 border border-red-300 font-medium'
           }`}
         >
           {response.message}
