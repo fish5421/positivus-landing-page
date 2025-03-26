@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // other config options here
+  output: 'standalone', // Optimize for production deployment
   async rewrites() {
     return [
       {
@@ -19,6 +19,11 @@ const nextConfig = {
   },
   // This is required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
+  // Handle image domains if needed
+  images: {
+    domains: ['customer-cajhg5znip2cupqy.cloudflarestream.com'],
+    unoptimized: true, // This can help with deployment issues
+  },
 };
 
 module.exports = nextConfig;
