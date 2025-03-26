@@ -32,13 +32,14 @@ export async function GET(req: NextRequest) {
           statusCode: response[0].statusCode,
           headers: response[0].headers,
         };
-      } catch (emailError: any) {
+      } catch (emailError) {
+        const errorObj: any = emailError;
         testEmailResult = {
           success: false,
-          error: emailError.message,
-          response: emailError.response ? {
-            body: emailError.response.body,
-            statusCode: emailError.response.statusCode,
+          error: errorObj?.message || 'Unknown error',
+          response: errorObj?.response ? {
+            body: errorObj.response.body,
+            statusCode: errorObj.response.statusCode,
           } : null,
         };
       }

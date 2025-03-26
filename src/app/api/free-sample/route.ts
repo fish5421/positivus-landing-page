@@ -162,7 +162,9 @@ export async function POST(req: NextRequest) {
       console.error('Error creating coupon:', couponError);
       
       // Check if it's a duplicate coupon error (meaning we somehow generated the same code)
-      if (couponError.message && couponError.message.includes('already exists')) {
+      if (typeof couponError === 'object' && couponError !== null && 
+          'message' in couponError && typeof couponError.message === 'string' &&
+          couponError.message.includes('already exists')) {
         // Try one more time with a different code
         const newCouponCode = generateCouponCode() + Math.floor(Math.random() * 1000);
         try {
@@ -271,9 +273,17 @@ export async function POST(req: NextRequest) {
       console.error('Error sending customer email:', emailError);
       
       // Check if it's a SendGrid verification error (common with new sender emails)
-      if (emailError.response && emailError.response.body && 
-          (emailError.response.body.errors?.some(e => e.message?.includes('verify')) || 
-           emailError.message?.includes('verify'))) {
+      if (typeof emailError === 'object' && emailError !== null &&
+          'response' in emailError && typeof emailError.response === 'object' && emailError.response !== null &&
+          'body' in emailError.response && typeof emailError.response.body === 'object' && 
+          (Array.isArray((emailError.response.body as any).errors) && 
+           (emailError.response.body as any).errors.some((e: any) => 
+             typeof e === 'object' && e !== null && 
+             'message' in e && typeof e.message === 'string' && 
+             e.message.includes('verify')
+           ) || 
+           ('message' in emailError && typeof emailError.message === 'string' && 
+            emailError.message.includes('verify')))) {
         return NextResponse.json({ 
           success: false, 
           error: "Email sending failed: Sender email not verified. Please contact support." 
