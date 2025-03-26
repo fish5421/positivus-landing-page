@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
         
         <p>To use your free sample:</p>
         <ol style="margin-bottom: 20px;">
-          <li>Visit <a href="https://app.zipaddressdata.com">zipaddressdata.com</a></li>
+          <li>Visit <a href="https://bulkupload.info">bulkupload.info</a></li>
           <li>Upload your address file</li>
           <li>Map your address fields</li>
           <li>At checkout, enter the coupon code above</li>
@@ -175,7 +175,7 @@ export async function POST(req: NextRequest) {
       ${couponCode}
       
       To use your free sample:
-      1. Visit zipaddressdata.com
+      1. Visit bulkupload.info
       2. Upload your address file
       3. Map your address fields
       4. At checkout, enter the coupon code above
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
     
     const msg = {
       to: escapedEmail,
-      from: "peter@partnerup.online", // Use verified sender email
+      from: "peter@precisiondataboost.com", // Use verified sender email
       subject: "Your Free Sample: 100 Address Enrichments",
       text: textContent,
       html: htmlContent,
@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
     // Also send notification to admin
     const adminMsg = {
       to: "peter@bulkupload.info",
-      from: "peter@partnerup.online",
+      from: "peter@precisiondataboost.com",
       subject: `New Free Sample Request: ${escapedEmail}`,
       text: `New free sample request from ${escapedEmail}. Coupon code: ${couponCode}`,
       html: `
