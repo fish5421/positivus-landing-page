@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 import posthog from 'posthog-js'
 
 export function ScrollTracker() {
-  const maxScrollRef = useRef(0)
+  const maxScrollRef = useRef<number>(0)
   
   useEffect(() => {
     if (typeof window === 'undefined') return

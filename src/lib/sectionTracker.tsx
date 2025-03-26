@@ -4,14 +4,14 @@ import { useEffect, useRef, useState } from 'react'
 import posthog from 'posthog-js'
 
 export function SectionTracker() {
-  const [visibleSections, setVisibleSections] = useState({})
-  const observerRef = useRef(null)
+  const [visibleSections, setVisibleSections] = useState<Record<string, boolean>>({})
+  const observerRef = useRef<IntersectionObserver | null>(null)
   
   useEffect(() => {
     if (typeof window === 'undefined' || !window.IntersectionObserver) return
     
     // Create a map to track which sections have already been seen
-    const sectionsTracked = {}
+    const sectionsTracked: Record<string, boolean> = {}
     
     // Setup the observer
     observerRef.current = new IntersectionObserver((entries) => {
@@ -25,7 +25,7 @@ export function SectionTracker() {
           // Track the section view in PostHog
           posthog.capture('section_viewed', {
             section_id: sectionId,
-            section_name: entry.target.dataset.sectionName || sectionId,
+            section_name: (entry.target as HTMLElement).dataset.sectionName || sectionId,
             path: window.location.pathname
           })
           
@@ -43,7 +43,9 @@ export function SectionTracker() {
     // Find all sections that have an ID (important sections in your landing page)
     const sections = document.querySelectorAll('section[id]')
     sections.forEach(section => {
-      observerRef.current.observe(section)
+      if (observerRef.current) {
+        observerRef.current.observe(section)
+      }
     })
     
     return () => {
