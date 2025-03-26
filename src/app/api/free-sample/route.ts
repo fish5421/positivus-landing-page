@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import sgMail from '@sendgrid/mail';
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/rate-limit';
+import { simpleRateLimit } from '@/lib/simple-rate-limit';
 
 // Rate limit configuration
 const RATE_LIMIT_CONFIG = {
@@ -30,7 +31,27 @@ export async function POST(req: NextRequest) {
   try {
     // Apply rate limiting
     const clientIp = getClientIp(req);
-    const { isLimited, reset, remaining } = await rateLimit(clientIp, RATE_LIMIT_CONFIG);
+    
+    // Try to use Vercel KV rate limiting, but fall back to simple rate limiting if there's an error
+    let isLimited = false;
+    let reset = 0;
+    let remaining = RATE_LIMIT_CONFIG.maxRequests;
+    
+    try {
+      // Dynamically import rate-limit to avoid hard failure if Vercel KV is not configured
+      const { rateLimit } = await import('@/lib/rate-limit');
+      const result = await rateLimit(clientIp, RATE_LIMIT_CONFIG);
+      isLimited = result.isLimited;
+      reset = result.reset;
+      remaining = result.remaining;
+    } catch (error) {
+      console.warn('Vercel KV rate limiting failed, using simple in-memory rate limiting instead:', error);
+      // Fall back to simple in-memory rate limiting
+      const result = simpleRateLimit(clientIp, RATE_LIMIT_CONFIG);
+      isLimited = result.isLimited;
+      reset = result.reset;
+      remaining = result.remaining;
+    }
     
     // If rate limited, return 429 Too Many Requests
     if (isLimited) {
