@@ -1,11 +1,47 @@
 /**
  * Simple in-memory rate limiting utility for Next.js API routes
- * This implementation is meant as a fallback when Vercel KV is not available
+ * This implementation provides basic rate limiting without requiring external services
  */
 
 // In-memory storage for rate limiting (will reset on server restart)
-// Not ideal for production, but better than nothing as a fallback
 const inMemoryStore: Record<string, { timestamps: number[], lastReset: number }> = {};
+
+// Set up automatic cleanup to prevent memory leaks
+const CLEANUP_INTERVAL = 1000 * 60 * 60; // 1 hour
+const MAX_STORE_SIZE = 1000; // Maximum number of IPs to track
+
+// Cleanup function to prevent unlimited growth of the store
+function cleanupStore() {
+  const now = Date.now();
+  const entries = Object.entries(inMemoryStore);
+  
+  // If store is getting too large, aggressively clean up old entries
+  if (entries.length > MAX_STORE_SIZE) {
+    console.log(`Rate limit store cleanup: Removing old entries (size: ${entries.length})`);
+    
+    // Sort entries by lastReset (oldest first)
+    entries.sort((a, b) => a[1].lastReset - b[1].lastReset);
+    
+    // Delete oldest 25% of entries
+    const toDelete = Math.floor(entries.length * 0.25);
+    for (let i = 0; i < toDelete; i++) {
+      delete inMemoryStore[entries[i][0]];
+    }
+  }
+  
+  // Also remove any entries that haven't been used in 24 hours
+  const oneDayAgo = now - (24 * 60 * 60 * 1000);
+  Object.keys(inMemoryStore).forEach(key => {
+    if (inMemoryStore[key].lastReset < oneDayAgo) {
+      delete inMemoryStore[key];
+    }
+  });
+}
+
+// Run cleanup periodically
+if (typeof setInterval !== 'undefined') {
+  setInterval(cleanupStore, CLEANUP_INTERVAL);
+}
 
 interface RateLimitConfig {
   interval: number;   // Time window in milliseconds

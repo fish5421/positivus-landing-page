@@ -29,6 +29,9 @@ export default function FreeSampleForm({ onClose }: FreeSampleFormProps) {
     setResponse(null);
     
     try {
+      // Add a brief delay to show loading state (also prevents multiple rapid submissions)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const res = await fetch('/api/free-sample', {
         method: 'POST',
         headers: {
@@ -39,9 +42,15 @@ export default function FreeSampleForm({ onClose }: FreeSampleFormProps) {
       
       const data = await res.json();
       
+      // Ensure we handle timeouts and network issues gracefully
+      if (!res) {
+        throw new Error('Network response was not received');
+      }
+      
       if (res.ok) {
         // Even if the HTTP status is "ok", we need to check if the operation actually succeeded
         if (data.success === false) {
+          console.error('API reported failure:', data.error);
           setResponse({
             status: 'error',
             message: data.error || 'Unable to process your request.'
@@ -49,17 +58,19 @@ export default function FreeSampleForm({ onClose }: FreeSampleFormProps) {
         } else {
           setResponse({
             status: 'success',
-            message: data.message || 'Success! Check your email for your free sample coupon.'
+            message: data.message || 'Success! Check your email for your free sample coupon. (It may take a few minutes to arrive, please check your spam folder if you don\'t see it.)'
           });
           setEmail('');
         }
       } else {
+        console.error('API error response:', data);
         setResponse({
           status: 'error',
           message: data.error || 'Something went wrong. Please try again.'
         });
       }
     } catch (error) {
+      console.error('Form submission error:', error);
       setResponse({
         status: 'error',
         message: 'Failed to submit request. Please try again.'

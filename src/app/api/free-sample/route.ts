@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import sgMail from '@sendgrid/mail';
-import { getClientIp } from '@/lib/rate-limit';
-import { simpleRateLimit } from '@/lib/simple-rate-limit';
+import { getClientIp, simpleRateLimit } from '@/lib/simple-rate-limit';
 
 // Rate limit configuration
 const RATE_LIMIT_CONFIG = {
@@ -29,29 +28,11 @@ function generateCouponCode(): string {
 
 export async function POST(req: NextRequest) {
   try {
-    // Apply rate limiting
+    // Apply simple in-memory rate limiting only
     const clientIp = getClientIp(req);
     
-    // Try to use Vercel KV rate limiting, but fall back to simple rate limiting if there's an error
-    let isLimited = false;
-    let reset = 0;
-    let remaining = RATE_LIMIT_CONFIG.maxRequests;
-    
-    try {
-      // Dynamically import rate-limit to avoid hard failure if Vercel KV is not configured
-      const { rateLimit } = await import('@/lib/rate-limit');
-      const result = await rateLimit(clientIp, RATE_LIMIT_CONFIG);
-      isLimited = result.isLimited;
-      reset = result.reset;
-      remaining = result.remaining;
-    } catch (error) {
-      console.warn('Vercel KV rate limiting failed, using simple in-memory rate limiting instead:', error);
-      // Fall back to simple in-memory rate limiting
-      const result = simpleRateLimit(clientIp, RATE_LIMIT_CONFIG);
-      isLimited = result.isLimited;
-      reset = result.reset;
-      remaining = result.remaining;
-    }
+    // Use only simple in-memory rate limiting
+    const { isLimited, reset, remaining } = simpleRateLimit(clientIp, RATE_LIMIT_CONFIG);
     
     // If rate limited, return 429 Too Many Requests
     if (isLimited) {
@@ -80,77 +61,145 @@ export async function POST(req: NextRequest) {
     // Escape user input
     const escapedEmail = escapeHtml(email);
     
-    // Initialize Stripe
+    // Initialize Stripe with better error handling
     const stripeApiKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeApiKey) {
       console.error('Missing Stripe API Key');
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+      return NextResponse.json({ success: false, error: "Server configuration error: Missing Stripe API Key" }, { status: 500 });
     }
     
-    const stripe = new Stripe(stripeApiKey, {
-      apiVersion: '2025-02-24.acacia', // Use the correct API version
-    });
+    let stripe;
+    try {
+      stripe = new Stripe(stripeApiKey, {
+        apiVersion: '2025-02-24.acacia', // Use the correct API version
+      });
+    } catch (stripeInitError) {
+      console.error('Error initializing Stripe:', stripeInitError);
+      return NextResponse.json({ 
+        success: false, 
+        error: "Failed to initialize payment system. Please try again later." 
+      }, { status: 500 });
+    }
     
     // Check if customer already exists in Stripe
-    const existingCustomers = await stripe.customers.list({
-      email: escapedEmail,
-      limit: 1
-    });
+    let existingCustomers;
+    try {
+      existingCustomers = await stripe.customers.list({
+        email: escapedEmail,
+        limit: 1
+      });
+    } catch (customerListError) {
+      console.error('Error checking existing customers:', customerListError);
+      return NextResponse.json({ 
+        success: false, 
+        error: "Failed to verify customer status. Please try again later." 
+      }, { status: 500 });
+    }
     
     let customer;
     
-    if (existingCustomers.data.length > 0) {
-      customer = existingCustomers.data[0];
-      
-      // Check if they've already used a free trial
-      if (customer.metadata.free_trial_sent === 'true') {
-        return NextResponse.json({ 
-          success: false, 
-          error: "This email has already received a free sample." 
-        }, { status: 200 });
+    try {
+      if (existingCustomers.data.length > 0) {
+        customer = existingCustomers.data[0];
+        
+        // Check if they've already used a free trial
+        if (customer.metadata.free_trial_sent === 'true') {
+          console.log(`Email ${escapedEmail} has already received a free sample`);
+          return NextResponse.json({ 
+            success: false, 
+            error: "This email has already received a free sample." 
+          }, { status: 200 });
+        }
+        
+        // Update existing customer metadata
+        customer = await stripe.customers.update(customer.id, {
+          metadata: { 
+            free_trial_sent: 'true',
+            free_trial_date: new Date().toISOString()
+          }
+        });
+        console.log(`Updated existing customer: ${customer.id}`);
+      } else {
+        // Create new customer
+        customer = await stripe.customers.create({
+          email: escapedEmail,
+          metadata: { 
+            free_trial_sent: 'true',
+            free_trial_date: new Date().toISOString()
+          }
+        });
+        console.log(`Created new customer: ${customer.id}`);
       }
-      
-      // Update existing customer metadata
-      customer = await stripe.customers.update(customer.id, {
-        metadata: { 
-          free_trial_sent: 'true',
-          free_trial_date: new Date().toISOString()
-        }
-      });
-    } else {
-      // Create new customer
-      customer = await stripe.customers.create({
-        email: escapedEmail,
-        metadata: { 
-          free_trial_sent: 'true',
-          free_trial_date: new Date().toISOString()
-        }
-      });
+    } catch (customerError) {
+      console.error('Error creating/updating customer:', customerError);
+      return NextResponse.json({ 
+        success: false, 
+        error: "Failed to process customer information. Please try again later." 
+      }, { status: 500 });
     }
     
     // Generate unique coupon code
     const couponCode = generateCouponCode();
+    console.log(`Generated coupon code: ${couponCode} for email: ${escapedEmail}`);
     
     // Create the coupon in Stripe (assuming $10 covers 100 records at $0.10 each)
-    await stripe.coupons.create({
-      id: couponCode,
-      name: '100 Free Records',
-      amount_off: 1000, // $10.00 in cents
-      currency: 'usd',
-      duration: 'once',
-      max_redemptions: 1,
-      redeem_by: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60), // 30 days
-      metadata: {
-        customer_id: customer.id,
-        free_records: '100'
+    try {
+      await stripe.coupons.create({
+        id: couponCode,
+        name: '100 Free Records',
+        amount_off: 1000, // $10.00 in cents
+        currency: 'usd',
+        duration: 'once',
+        max_redemptions: 1,
+        redeem_by: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60), // 30 days
+        metadata: {
+          customer_id: customer.id,
+          free_records: '100'
+        }
+      });
+      console.log(`Created coupon in Stripe: ${couponCode}`);
+    } catch (couponError) {
+      console.error('Error creating coupon:', couponError);
+      
+      // Check if it's a duplicate coupon error (meaning we somehow generated the same code)
+      if (couponError.message && couponError.message.includes('already exists')) {
+        // Try one more time with a different code
+        const newCouponCode = generateCouponCode() + Math.floor(Math.random() * 1000);
+        try {
+          await stripe.coupons.create({
+            id: newCouponCode,
+            name: '100 Free Records',
+            amount_off: 1000,
+            currency: 'usd',
+            duration: 'once',
+            max_redemptions: 1,
+            redeem_by: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60),
+            metadata: {
+              customer_id: customer.id,
+              free_records: '100'
+            }
+          });
+          console.log(`Created coupon on second attempt: ${newCouponCode}`);
+        } catch (secondCouponError) {
+          console.error('Error creating coupon on second attempt:', secondCouponError);
+          return NextResponse.json({ 
+            success: false, 
+            error: "Failed to generate your coupon. Please try again later." 
+          }, { status: 500 });
+        }
+      } else {
+        return NextResponse.json({ 
+          success: false, 
+          error: "Failed to create coupon. Please try again later." 
+        }, { status: 500 });
       }
-    });
+    }
     
-    // Initialize SendGrid
+    // Initialize SendGrid with better error handling
     const sendgridApiKey = process.env.SENDGRID_API_KEY;
     if (!sendgridApiKey) {
       console.error('Missing SendGrid API Key');
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+      return NextResponse.json({ success: false, error: "Server configuration error: Missing SendGrid API Key" }, { status: 500 });
     }
     
     sgMail.setApiKey(sendgridApiKey);
@@ -206,6 +255,7 @@ export async function POST(req: NextRequest) {
       Questions? Reply to this email and we'll help you out.
     `;
     
+    // Send customer email with proper error handling
     const msg = {
       to: escapedEmail,
       from: "peter@precisiondataboost.com", // Use verified sender email
@@ -214,7 +264,27 @@ export async function POST(req: NextRequest) {
       html: htmlContent,
     };
     
-    await sgMail.send(msg);
+    try {
+      const response = await sgMail.send(msg);
+      console.log('Customer email sent successfully:', response[0].statusCode);
+    } catch (emailError) {
+      console.error('Error sending customer email:', emailError);
+      
+      // Check if it's a SendGrid verification error (common with new sender emails)
+      if (emailError.response && emailError.response.body && 
+          (emailError.response.body.errors?.some(e => e.message?.includes('verify')) || 
+           emailError.message?.includes('verify'))) {
+        return NextResponse.json({ 
+          success: false, 
+          error: "Email sending failed: Sender email not verified. Please contact support." 
+        }, { status: 500 });
+      }
+      
+      return NextResponse.json({ 
+        success: false, 
+        error: "Failed to send email. Please try again later." 
+      }, { status: 500 });
+    }
     
     // Also send notification to admin
     const adminMsg = {
@@ -230,7 +300,13 @@ export async function POST(req: NextRequest) {
       `,
     };
     
-    await sgMail.send(adminMsg);
+    try {
+      await sgMail.send(adminMsg);
+      console.log('Admin notification email sent successfully');
+    } catch (adminEmailError) {
+      // Just log admin email errors but don't fail the request
+      console.error('Error sending admin notification email:', adminEmailError);
+    }
     
     // Return success response
     return NextResponse.json(
