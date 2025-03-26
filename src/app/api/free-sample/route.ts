@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     }
     
     const stripe = new Stripe(stripeApiKey, {
-      apiVersion: '2023-10-16', // Use the latest API version
+      apiVersion: '2025-02-24.acacia', // Use the correct API version
     });
     
     // Check if customer already exists in Stripe
