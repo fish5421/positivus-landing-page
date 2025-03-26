@@ -12,6 +12,7 @@ export default function FreeSampleForm({ onClose }: FreeSampleFormProps) {
   const [response, setResponse] = useState<{
     status: 'success' | 'error';
     message: string;
+    couponCode?: string;
   } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,10 +57,19 @@ export default function FreeSampleForm({ onClose }: FreeSampleFormProps) {
             message: data.error || 'Unable to process your request.'
           });
         } else {
-          setResponse({
-            status: 'success',
-            message: data.message || 'Success! Check your email for your free sample coupon. (It may take a few minutes to arrive, please check your spam folder if you don\'t see it.)'
-          });
+          // Check if we need to display the coupon code directly in the UI
+          if (data.couponCode) {
+            setResponse({
+              status: 'success',
+              message: data.message || 'Success! Please save your coupon code:',
+              couponCode: data.couponCode
+            });
+          } else {
+            setResponse({
+              status: 'success',
+              message: data.message || 'Success! Check your email for your free sample coupon. (It may take a few minutes to arrive, please check your spam folder if you don\'t see it.)'
+            });
+          }
           setEmail('');
         }
       } else {
@@ -95,7 +105,16 @@ export default function FreeSampleForm({ onClose }: FreeSampleFormProps) {
               : 'bg-red-100 text-red-800 border border-red-300 font-medium'
           }`}
         >
-          {response.message}
+          <p>{response.message}</p>
+          
+          {/* Display coupon code prominently if provided */}
+          {response.couponCode && (
+            <div className="mt-4 p-3 bg-white border-2 border-green-500 rounded-md text-center">
+              <p className="text-sm text-gray-600 mb-1">Your Coupon Code:</p>
+              <p className="text-xl font-bold font-mono tracking-wide">{response.couponCode}</p>
+              <p className="mt-2 text-xs text-gray-500">Please save this code - you'll need it at checkout</p>
+            </div>
+          )}
         </div>
       )}
       

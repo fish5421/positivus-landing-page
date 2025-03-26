@@ -19,14 +19,36 @@ function escapeHtml(unsafe: string): string {
     .replace(/'/g, "&#039;");
 }
 
-// Function to generate a unique coupon code
+// Function to generate a unique coupon code with timestamp to reduce collision chance
 function generateCouponCode(): string {
   const prefix = 'FREE100';
-  const randomString = Math.random().toString(36).substring(2, 10).toUpperCase();
-  return `${prefix}-${randomString}`;
+  // Add timestamp in the code to reduce chance of duplicates
+  const timestamp = Date.now().toString(36).substring(4, 8).toUpperCase();
+  const randomString = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `${prefix}-${timestamp}${randomString}`;
+}
+
+// Function to safely log an object without circular references
+function safeJsonLog(obj: any): string {
+  try {
+    const cache: any[] = [];
+    return JSON.stringify(obj, (key, value) => {
+      if (typeof value === 'object' && value !== null) {
+        if (cache.includes(value)) return '[Circular]';
+        cache.push(value);
+      }
+      return value;
+    }, 2);
+  } catch (err) {
+    return '[Unable to stringify object]';
+  }
 }
 
 export async function POST(req: NextRequest) {
+  // Track if either the primary or backup email method succeeded
+  let emailDelivered = false;
+  let couponCode = '';
+  
   try {
     // Apply simple in-memory rate limiting only
     const clientIp = getClientIp(req);
@@ -138,8 +160,8 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
     
-    // Generate unique coupon code
-    const couponCode = generateCouponCode();
+    // Generate unique coupon code - storing in outer scope variable for error handling
+    couponCode = generateCouponCode();
     console.log(`Generated coupon code: ${couponCode} for email: ${escapedEmail}`);
     
     // Create the coupon in Stripe (assuming $10 covers 100 records at $0.10 each)
@@ -180,7 +202,8 @@ export async function POST(req: NextRequest) {
               free_records: '100'
             }
           });
-          console.log(`Created coupon on second attempt: ${newCouponCode}`);
+          couponCode = newCouponCode;
+          console.log(`Created coupon on second attempt: ${couponCode}`);
         } catch (secondCouponError) {
           console.error('Error creating coupon on second attempt:', secondCouponError);
           return NextResponse.json({ 
@@ -200,10 +223,10 @@ export async function POST(req: NextRequest) {
     const sendgridApiKey = process.env.SENDGRID_API_KEY;
     if (!sendgridApiKey) {
       console.error('Missing SendGrid API Key');
-      return NextResponse.json({ success: false, error: "Server configuration error: Missing SendGrid API Key" }, { status: 500 });
+      // Don't fail here - we'll still create the coupon and return it directly to the user
+    } else {
+      sgMail.setApiKey(sendgridApiKey);
     }
-    
-    sgMail.setApiKey(sendgridApiKey);
     
     // Prepare email content
     const htmlContent = `
@@ -256,65 +279,129 @@ export async function POST(req: NextRequest) {
       Questions? Reply to this email and we'll help you out.
     `;
     
-    // Send customer email with proper error handling
-    const msg = {
-      to: escapedEmail,
-      from: "peter@precisiondataboost.com", // Use verified sender email
-      subject: "Your Free Sample: 100 Address Enrichments",
-      text: textContent,
-      html: htmlContent,
-    };
-    
-    try {
-      const response = await sgMail.send(msg);
-      console.log('Customer email sent successfully:', response[0].statusCode);
-    } catch (emailError) {
-      console.error('Error sending customer email:', emailError);
-      
-      // Check if it's a SendGrid verification error (common with new sender emails)
-      const errorObj: any = emailError;
-      if (errorObj.response?.body?.errors?.some((e: any) => e.message?.includes('verify')) || 
-          errorObj.message?.includes('verify')) {
-        return NextResponse.json({ 
-          success: false, 
-          error: "Email sending failed: Sender email not verified. Please contact support." 
-        }, { status: 500 });
+    // Only try to send emails if SendGrid API key is set
+    if (sendgridApiKey) {
+      // PRIMARY EMAIL METHOD: Using the preferred sender
+      try {
+        console.log(`[ATTEMPT 1] Sending with primary sender: peter@precisiondataboost.com to: ${escapedEmail}`);
+        
+        const msg = {
+          to: escapedEmail,
+          from: "peter@precisiondataboost.com",
+          subject: "Your Free Sample: 100 Address Enrichments",
+          text: textContent,
+          html: htmlContent
+        };
+        
+        const response = await sgMail.send(msg);
+        console.log(`[SUCCESS] Primary email sent. Status code: ${response[0].statusCode}`);
+        emailDelivered = true;
+      } catch (primaryError: any) {
+        console.error(`[FAIL] Primary email failed:`, primaryError.message);
+        console.error(`More details:`, primaryError.response?.body ? safeJsonLog(primaryError.response.body) : 'No response body');
+        
+        // BACKUP EMAIL METHOD 1: Try sending from the admin email with reply-to set
+        try {
+          console.log(`[ATTEMPT 2] Sending with admin email as sender: peter@bulkupload.info to: ${escapedEmail}`);
+          
+          const fallbackMsg = {
+            to: escapedEmail,
+            from: "peter@bulkupload.info", // Admin email as sender
+            replyTo: "peter@precisiondataboost.com",
+            subject: "Your Free Sample: 100 Address Enrichments",
+            text: textContent,
+            html: htmlContent
+          };
+          
+          const fallbackResponse = await sgMail.send(fallbackMsg);
+          console.log(`[SUCCESS] Fallback email sent. Status code: ${fallbackResponse[0].statusCode}`);
+          emailDelivered = true;
+        } catch (fallbackError: any) {
+          console.error(`[FAIL] Fallback email failed:`, fallbackError.message);
+          console.error(`More details:`, fallbackError.response?.body ? safeJsonLog(fallbackError.response.body) : 'No response body');
+
+          // BACKUP EMAIL METHOD 2: Try sending a completely generic email from a Gmail address
+          try {
+            console.log(`[ATTEMPT 3] Trying SendGrid default sender...`);
+            
+            // Last resort - use a completely generic template without fancy formatting
+            const lastResortMsg = {
+              to: escapedEmail,
+              from: "peter@bulkupload.info", // This should be a verified sender
+              subject: "Your Free Sample Coupon Code",
+              text: `
+Your free sample coupon code is: ${couponCode}
+
+Use this at bulkupload.info for 100 free address enrichments.
+
+Questions? Reply to this email.
+              `,
+              // Very simple HTML to avoid any rendering issues
+              html: `
+<p>Your free sample coupon code is: <strong>${couponCode}</strong></p>
+<p>Use this at bulkupload.info for 100 free address enrichments.</p>
+<p>Questions? Reply to this email.</p>
+              `
+            };
+            
+            const finalResponse = await sgMail.send(lastResortMsg);
+            console.log(`[SUCCESS] Simple fallback email sent. Status code: ${finalResponse[0].statusCode}`);
+            emailDelivered = true;
+          } catch (finalError: any) {
+            console.error(`[FAIL] All email attempts failed:`, finalError.message);
+            console.error(`Final error details:`, finalError.response?.body ? safeJsonLog(finalError.response.body) : 'No response body');
+          }
+        }
       }
-      
-      return NextResponse.json({ 
-        success: false, 
-        error: "Failed to send email. Please try again later." 
-      }, { status: 500 });
+    } else {
+      console.warn('SendGrid API key not set - skipping email sending');
     }
     
-    // Also send notification to admin
-    const adminMsg = {
-      to: "peter@bulkupload.info",
-      from: "peter@precisiondataboost.com",
-      subject: `New Free Sample Request: ${escapedEmail}`,
-      text: `New free sample request from ${escapedEmail}. Coupon code: ${couponCode}`,
-      html: `
-        <h2>New Free Sample Request</h2>
-        <p><strong>Email:</strong> ${escapedEmail}</p>
-        <p><strong>Coupon Code:</strong> ${couponCode}</p>
-        <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
-      `,
-    };
-    
-    try {
-      await sgMail.send(adminMsg);
-      console.log('Admin notification email sent successfully');
-    } catch (adminEmailError) {
-      // Just log admin email errors but don't fail the request
-      console.error('Error sending admin notification email:', adminEmailError);
+    // Always try to send admin notification
+    if (sendgridApiKey) {
+      try {
+        // Always use the admin email as the sender for the admin notification
+        const adminMsg = {
+          to: "peter@bulkupload.info",
+          from: "peter@bulkupload.info", // This should definitely be verified
+          subject: `[IMPORTANT] New Free Sample Request: ${escapedEmail}`,
+          text: `
+CRITICAL ADMIN NOTIFICATION
+
+New free sample request from: ${escapedEmail}
+Coupon code: ${couponCode}
+Date: ${new Date().toISOString()}
+Email successfully sent to user: ${emailDelivered ? "YES" : "NO - USER DID NOT RECEIVE EMAIL"}
+
+${!emailDelivered ? "ACTION REQUIRED: Please manually send the coupon code to the user!" : ""}
+`,
+          html: `
+<h2>CRITICAL ADMIN NOTIFICATION</h2>
+<p><strong>New free sample request from:</strong> ${escapedEmail}</p>
+<p><strong>Coupon code:</strong> ${couponCode}</p>
+<p><strong>Date:</strong> ${new Date().toISOString()}</p>
+<p><strong>Email successfully sent to user:</strong> ${emailDelivered ? "YES" : "<span style='color: red; font-weight: bold;'>NO - USER DID NOT RECEIVE EMAIL</span>"}</p>
+${!emailDelivered ? "<p style='color: red; font-weight: bold;'>ACTION REQUIRED: Please manually send the coupon code to the user!</p>" : ""}
+`
+        };
+        
+        await sgMail.send(adminMsg);
+        console.log('Admin notification email sent successfully');
+      } catch (adminError) {
+        console.error('Failed to send admin notification:', adminError);
+      }
     }
     
-    // Return success response
+    // Return success response, showing the coupon code directly if email failed
     return NextResponse.json(
       { 
         success: true, 
-        message: "Success! We've sent the coupon code to your email.",
-        couponGenerated: true
+        message: emailDelivered 
+          ? "Success! We've sent the coupon code to your email. Please check your inbox and spam folder."
+          : `Success! Your coupon code is ${couponCode}. Please save this code - you'll need it at checkout.`,
+        couponCode: emailDelivered ? undefined : couponCode,
+        couponGenerated: true,
+        emailDelivered
       }, 
       { 
         status: 200,
@@ -327,6 +414,19 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("Free Sample API Error:", error);
+    
+    // If we generated a coupon but something else failed, still return it to the user
+    if (couponCode) {
+      return NextResponse.json({ 
+        success: true,
+        message: `Success! Your coupon code is ${couponCode}. Please save this code - you'll need it at checkout.`,
+        couponCode,
+        couponGenerated: true,
+        emailDelivered: false,
+        note: "We encountered an issue sending the email, but your coupon has been generated successfully."
+      }, { status: 200 });
+    }
+    
     return NextResponse.json({ 
       success: false,
       error: "Failed to process request. Please try again later.",
