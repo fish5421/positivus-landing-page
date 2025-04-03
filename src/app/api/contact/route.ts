@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sgMail from "@sendgrid/mail";
-import { rateLimit, getClientIp } from '@/lib/rate-limit';
 
 // Function to escape HTML special characters to prevent XSS attacks
 function escapeHtml(unsafe: string): string {
@@ -12,35 +11,10 @@ function escapeHtml(unsafe: string): string {
     .replace(/'/g, "&#039;");
 }
 
-// Rate limit configuration - adjust these values based on your requirements
-const RATE_LIMIT_CONFIG = {
-  interval: 60 * 1000,    // 1 minute (in milliseconds)
-  maxRequests: 5          // 5 requests per minute
-};
-
 export async function POST(req: NextRequest) {
   try {
-    // Apply rate limiting
-    const clientIp = getClientIp(req);
-    const { isLimited, reset, remaining } = await rateLimit(clientIp, RATE_LIMIT_CONFIG);
-    
-    // If rate limited, return 429 Too Many Requests
-    if (isLimited) {
-      return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        { 
-          status: 429,
-          headers: {
-            'Retry-After': Math.ceil(reset / 1000).toString(),
-            'X-RateLimit-Limit': RATE_LIMIT_CONFIG.maxRequests.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': Math.ceil(Date.now() / 1000 + reset / 1000).toString()
-          }
-        }
-      );
-    }
-    
     // Initialize SendGrid
+    console.log("Checking for SENDGRID_API_KEY. Value:", process.env.SENDGRID_API_KEY);
     const apiKey = process.env.SENDGRID_API_KEY;
     if (!apiKey) {
       console.error('Missing SendGrid API Key');
@@ -122,23 +96,36 @@ export async function POST(req: NextRequest) {
 
     await sgMail.send(content);
     
-    // Return rate limit headers with successful response
     return NextResponse.json(
       { status: "Success", message: "Email sent successfully" }, 
       { 
-        status: 200,
-        headers: {
-          'X-RateLimit-Limit': RATE_LIMIT_CONFIG.maxRequests.toString(),
-          'X-RateLimit-Remaining': remaining.toString(),
-          'X-RateLimit-Reset': Math.ceil(Date.now() / 1000 + reset / 1000).toString()
-        }
+        status: 200
       }
     );
   } catch (error) {
-    console.error("SendGrid Error:", error);
-    return NextResponse.json({ 
-      error: "Failed to send email",
-      details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
-    }, { status: 500 });
+    console.error("Failed to send email. Error:", error); // Log the specific error caught
+    
+    // Determine the error message
+    let errorMessage = "Failed to send email. Please try again later.";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    
+    // Check if the error object has SendGrid specific details
+    // Note: Adjust based on the actual structure of SendGrid errors if needed
+    // @ts-ignore
+    if (error.response && error.response.body && error.response.body.errors) {
+      // @ts-ignore
+      errorMessage = `SendGrid Error: ${error.response.body.errors.map(e => e.message).join(', ')}`;
+      // @ts-ignore
+      console.error("SendGrid Error Body:", error.response.body);
+    }
+    
+    return NextResponse.json(
+      { message: errorMessage }, // Use the detailed error message
+      { status: 500 }
+    );
   }
 }

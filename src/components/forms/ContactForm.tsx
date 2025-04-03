@@ -77,8 +77,9 @@ const ContactForm: React.FC<ContactFormProps> = ({
         setPhone('');
         setMessage(defaultMessages[formType]);
       } else {
-        const error = await response.json();
-        throw new Error(error.message || 'Something went wrong');
+        const errorData = await response.json(); // Read the error response body
+        console.error('API Error Response:', errorData); // Log the full error data
+        throw new Error(errorData.message || errorData.error || 'Something went wrong'); // Use errorData.message OR errorData.error
       }
     } catch (error) {
       console.error('Error submitting form:', error);
