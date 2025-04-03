@@ -168,6 +168,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       button_text: tier.buttonText
                     })();
                   }}
+                  data-cta-name={`ChoosePlan-${tier.name.replace(/\s+/g, '-')}`}
                 >
                   {tier.buttonText}
                 </button>

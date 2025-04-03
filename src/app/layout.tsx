@@ -6,6 +6,7 @@ import { PostHogProvider } from "../components/PostHogProvider";
 import { ScrollTracker } from "@/lib/scrollTracker";
 import { SectionTracker } from "@/lib/sectionTracker";
 import { ButtonTracker } from "@/lib/buttonTracker";
+import { CTATracker } from "@/lib/ctaTracker";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -47,6 +48,7 @@ export default function RootLayout({
           <ScrollTracker />
           <SectionTracker />
           <ButtonTracker />
+          <CTATracker />
           {children}
         </PostHogProvider>
       </body>

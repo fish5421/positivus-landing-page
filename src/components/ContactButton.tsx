@@ -26,6 +26,7 @@ const ContactButton: React.FC<ContactButtonProps> = ({ className, children }) =>
       <button
         onClick={openModal}
         className={className}
+        data-cta-name="ContactButton"
       >
         {children}
       </button>

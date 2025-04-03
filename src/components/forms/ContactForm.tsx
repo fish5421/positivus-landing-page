@@ -200,6 +200,7 @@ const ContactForm: React.FC<ContactFormProps> = ({
             type="submit"
             disabled={isSubmitting}
             className={`w-full btn btn-primary flex items-center justify-center ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+            data-cta-name={`SubmitContactForm-${formType}`}
           >
             {isSubmitting ? (
               <>

@@ -44,6 +44,7 @@ const CTA: React.FC<CTAProps> = ({
           <button 
             onClick={openModal}
             className="btn btn-primary bg-[#191A23] text-white rounded-[14px] py-4 md:py-[20px] px-4 md:px-[35px] w-full md:w-[288px] flex items-center justify-center hover:bg-gray-800 transition-colors"
+            data-cta-name={`CTA-${title.replace(/\s+/g, '-')}`}
           >
             {buttonText}
           </button>

@@ -77,6 +77,7 @@ export default function Home() {
               <button 
                 onClick={openFreeSampleModal}
                 className="inline-flex items-center justify-center px-8 py-4 bg-[#B9FF66] text-black font-medium rounded-lg hover:bg-opacity-90 transition-colors w-fit"
+                data-cta-name="GetFreeSampleHero"
               >
                 Get Your Free Sample
               </button>
@@ -412,7 +413,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-gray-300 pt-8 text-center md:text-left md:flex md:justify-between md:items-center text-gray-600">
-            <p>© {new Date().getFullYear()} Precision Data. All rights reserved.</p>
+            <p> 2023 Precision Data. All rights reserved.</p>
             <div className="mt-4 md:mt-0 space-x-6">
               <a href="/terms-of-use" target="_blank" className="text-gray-600 hover:text-primary transition-colors">Terms of Use</a>
               <a href="/privacy-policy" target="_blank" className="text-gray-600 hover:text-primary transition-colors">Privacy Policy</a>
