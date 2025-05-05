@@ -84,9 +84,9 @@ export async function POST(req: NextRequest) {
     const escapedEmail = escapeHtml(email);
     
     // Initialize Stripe with better error handling
-    const stripeApiKey = process.env.STRIPE_SECRET_KEY;
+    const stripeApiKey = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY;
     if (!stripeApiKey) {
-      console.error('Missing Stripe API Key');
+      console.error('Missing Stripe API Key. Ensure STRIPE_SECRET_KEY or STRIPE_API_KEY is set in .env.local');
       return NextResponse.json({ success: false, error: "Server configuration error: Missing Stripe API Key" }, { status: 500 });
     }
     
@@ -254,7 +254,7 @@ export async function POST(req: NextRequest) {
         <p>Questions? Reply to this email and we'll help you out.</p>
         
         <p style="margin-top: 30px; color: #666; font-size: 12px;">
-          © ${new Date().getFullYear()} Precision Data. All rights reserved.
+          ${new Date().getFullYear()} Precision Data. All rights reserved.
         </p>
       </div>
     `;
@@ -283,11 +283,12 @@ export async function POST(req: NextRequest) {
     if (sendgridApiKey) {
       // PRIMARY EMAIL METHOD: Using the preferred sender
       try {
-        console.log(`[ATTEMPT 1] Sending with primary sender: peter@precisiondataboost.com to: ${escapedEmail}`);
+        console.log(`[ATTEMPT 1] Sending with primary sender: peter@bulkupload.info to: ${escapedEmail}`);
         
         const msg = {
           to: escapedEmail,
-          from: "peter@precisiondataboost.com",
+          from: "peter@bulkupload.info",
+          replyTo: "peter@precisiondataboost.com",
           subject: "Your Free Sample: 100 Address Enrichments",
           text: textContent,
           html: htmlContent

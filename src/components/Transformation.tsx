@@ -108,9 +108,9 @@ const Transformation: React.FC<TransformationProps> = ({
                 </svg>
               </div>
               <div className="text-center">
-                <h3 className="text-2xl font-bold mb-4 text-black">Zillow Data Enrichment Process</h3>
+                <h3 className="text-2xl font-bold mb-4 text-black">Real Estate Valuation Data Enrichment Process</h3>
                 <p className="text-gray-600 max-w-md mx-auto mb-8">
-                  This animation demonstrates how we transform basic address lists into targeted campaigns by enriching them with Zillow's comprehensive property data
+                  This animation demonstrates how we transform basic address lists into targeted campaigns by enriching them with real estate valuation data
                 </p>
               </div>
               <div className="flex space-x-3 mt-2">
@@ -139,7 +139,7 @@ const Transformation: React.FC<TransformationProps> = ({
                     }}
                     allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                     allowFullScreen={true}
-                    title="Zillow Data Enrichment Process"
+                    title="Real Estate Valuation Data Enrichment Process"
                   />
                 </div>
               )}

@@ -24,14 +24,14 @@ const SuccessStep: React.FC = () => {
         <ol className="list-decimal pl-5 space-y-2 text-gray-700">
           <li>You'll receive a confirmation email at <span className="font-medium">{data.email}</span> within the next few minutes.</li>
           <li>Peter will review your information and contact you within 1-2 business days to discuss your specific needs.</li>
-          <li>He'll guide you through the setup process and answer any questions you have about getting started with our Zillow data enrichment service.</li>
+          <li>He'll guide you through the setup process and answer any questions you have about getting started with our real estate valuation data enrichment service.</li>
           <li>You'll receive a personalized implementation plan based on your business requirements and goals.</li>
         </ol>
       </div>
       
       <div className="mb-6 p-6 rounded-lg border border-[#B9FF66] bg-[#F8FFF0]">
         <p className="text-gray-700">
-          "Thank you for your interest in our Zillow data enrichment services. I'm looking forward to helping you transform your direct mail campaigns with precise targeting. Expect to hear from me soon!"
+          "Thank you for your interest in our real estate valuation data enrichment services. I'm looking forward to helping you transform your direct mail campaigns with precise targeting. Expect to hear from me soon!"
         </p>
         <p className="font-medium mt-2">— Peter Correia, Founder</p>
       </div>

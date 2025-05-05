@@ -6,12 +6,7 @@ import { Suspense, useEffect } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
-  console.log("--- PostHogProvider Component Rendering ---"); // Log component render
-
   useEffect(() => {
-    // Also log the key inside useEffect to check if it's available
-    console.log("PostHog Key inside useEffect:", process.env.NEXT_PUBLIC_POSTHOG_KEY);
-
     if (process.env.NEXT_PUBLIC_POSTHOG_KEY) { // Check if key exists before init
       posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, { // Removed the non-null assertion !, safer check
         api_host: "/ingest",

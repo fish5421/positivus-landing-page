@@ -69,9 +69,9 @@ export default function Home() {
       <SectionWrapper>
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-5xl font-bold mb-6">Target the Right Homeowners Every Time with Zillow Data.</h1>
+            <h1 className="text-5xl font-bold mb-6">Target the Right Homeowners Every Time with Real Estate Valuation Data.</h1>
             <p className="text-xl text-gray-700 mb-8">
-              Instantly enrich your mailing lists with Zillow's real estate data, helping you segment audiences and deliver targeted offers based on home values, ownership status, and more.
+              Instantly enrich your mailing lists with real estate valuation data, helping you segment audiences and deliver targeted offers based on home values, ownership status, and more.
             </p>
             <div className="flex flex-col gap-4">
               <button 
@@ -89,7 +89,7 @@ export default function Home() {
             </div>
           </div>
           <div className="relative h-[400px] rounded-3xl overflow-hidden border border-gray-200">
-            {/* Video demo of Zillow data enrichment */}
+            {/* Video demo of real estate valuation data enrichment */}
             <div className="absolute inset-0 w-full h-full overflow-hidden bg-black" id="videoContainer">
               {/* Video content - will be replaced with different URLs based on status */}
               <div id="videoWrapper" className="absolute" style={{
@@ -156,12 +156,12 @@ export default function Home() {
       {/* Transformation Section */}
       <SectionWrapper id="solution">
         <Transformation 
-          heading="Transform Your Direct Mail with Zillow Data"
+          heading="Transform Your Direct Mail with Real Estate Valuation Data"
           subheading="Leverage property insights to create more targeted, effective campaigns that deliver measurable results."
           benefits={[
             {
               title: "Better Targeting",
-              description: "Precisely segment your audience by enriching your existing address data with detailed Zillow real estate insights and demographic characteristics, ensuring your direct mail campaigns reach the most receptive audience."
+              description: "Precisely segment your audience by enriching your existing address data with detailed real estate valuation insights and demographic characteristics, ensuring your direct mail campaigns reach the most receptive audience."
             },
             {
               title: "Enhanced ROI on Marketing Spend",
@@ -172,8 +172,8 @@ export default function Home() {
               description: "Uncover detailed demographic and real estate profiles of your audience, allowing personalized communication and stronger engagement."
             }
           ]}
-          illustrationTitle="How Zillow Data Transforms Your Campaigns"
-          illustrationCaption="Watch how raw address data becomes targeted, high-performing direct mail campaigns through Zillow's property insights"
+          illustrationTitle="How Real Estate Valuation Data Transforms Your Campaigns"
+          illustrationCaption="Watch how raw address data becomes targeted, high-performing direct mail campaigns through real estate valuation insights"
         />
       </SectionWrapper>
 
@@ -181,10 +181,10 @@ export default function Home() {
       <SectionWrapper background="light" id="testimonials">
         <Testimonials 
           heading="What Our Clients Say"
-          subheading="Real results from businesses using our Zillow data enrichment services."
+          subheading="Real results from businesses using our real estate valuation data enrichment services."
           testimonials={[
             {
-              quote: "Peter's Zillow data scraper has been a game-changer for our real estate business. It's incredibly efficient and allows us to quickly gather the data we need to make informed decisions.",
+              quote: "Peter's real estate valuation data service has been a game-changer for our real estate business. It's incredibly efficient and allows us to quickly gather the data we need to make informed decisions.",
               highlight: "The time we've saved has been invaluable. Highly recommend it!",
               name: "Seth Choate",
               title: "Founder",
@@ -313,21 +313,21 @@ export default function Home() {
       <SectionWrapper background="light" id="faq" className="py-20">
         <AccordionFAQ 
           heading="Frequently Asked Questions"
-          subheading="Get answers to common questions about our Zillow data enrichment services."
+          subheading="Get answers to common questions about our real estate valuation data enrichment services."
           faqs={[
             {
-              question: "Why should I pay for Zillow data enrichment when I can already buy standard homeowner lists or data from other providers?",
+              question: "Why should I pay for real estate valuation data enrichment when I can already buy standard homeowner lists or data from other providers?",
               answer: (
                 <p>
-                  Unlike basic homeowner lists or conventional data providers, Zillow-enriched data provides up-to-date property valuations, rent estimates, and detailed housing insights. This extra layer of precision helps you segment and target prospects more accurately, resulting in improved conversion rates and reduced marketing waste. By leveraging real-time valuations instead of static, generic lists, you gain a competitive edge in crafting high-impact campaigns.
+                  Unlike basic homeowner lists or conventional data providers, enriched data provides up-to-date property valuations, rent estimates, and detailed housing insights. This extra layer of precision helps you segment and target prospects more accurately, resulting in improved conversion rates and reduced marketing waste. By leveraging real-time valuations instead of static, generic lists, you gain a competitive edge in crafting high-impact campaigns.
                 </p>
               )
             },
             {
-              question: "How accurate is Zillow's Zestimate data? Won't relying on inaccurate valuations hurt my marketing effectiveness?",
+              question: "How accurate are the automated property value estimates? Won't relying on inaccurate valuations hurt my marketing effectiveness?",
               answer: (
                 <p>
-                  Zillow's Zestimate typically boasts a median error rate of about 2–7% (depending on the market). While no automated valuation can be perfect, these accuracy levels are generally sufficient for effective marketing segmentation. To alleviate concerns, we offer both a free trial period and a money-back guarantee, allowing you to validate the performance and accuracy before committing long-term.
+                  Our property value estimates typically boast a median error rate of about 2–7% (depending on the market). While no automated valuation can be perfect, these accuracy levels are generally sufficient for effective marketing segmentation. To alleviate concerns, we offer both a free trial period and a money-back guarantee, allowing you to validate the performance and accuracy before committing long-term.
                 </p>
               )
             },
@@ -340,15 +340,15 @@ export default function Home() {
               )
             },
             {
-              question: "I'm concerned about data privacy and compliance. How do I know this Zillow data enrichment service won't put my business at risk?",
+              question: "I'm concerned about data privacy and compliance. How do I know this data enrichment service won't put my business at risk?",
               answer: (
                 <p>
-                  Our enrichment process uses publicly accessible property data from Zillow, focusing on addresses and real estate details—not sensitive personal information. We strictly adhere to all relevant privacy regulations and maintain robust data management practices. This ensures that you remain fully compliant while benefiting from the added value of enriched property insights.
+                  Our enrichment process uses publicly accessible property data, focusing on addresses and real estate details—not sensitive personal information. We strictly adhere to all relevant privacy regulations and maintain robust data management practices. This ensures that you remain fully compliant while benefiting from the added value of enriched property insights.
                 </p>
               )
             },
             {
-              question: "How will Zillow-enriched data actually improve my direct mail response rate or ROI? Can you quantify the impact?",
+              question: "How will real estate valuation data actually improve my direct mail response rate or ROI? Can you quantify the impact?",
               answer: (
                 <p>
                   By focusing your outreach on more accurately valued properties, you can tailor your messaging and offers to each segment, improving overall response and conversion rates. While exact results vary, case studies have shown increases as high as 144% for certain campaigns. For further confidence, we offer a free month or trial period, along with a money-back guarantee, so you can measure ROI directly without risk.
@@ -378,7 +378,7 @@ export default function Home() {
       {/* CTA Section */}
       <SectionWrapper id="contact" className="py-16 md:py-24">
         <CTA 
-          title="Ready to transform your direct mail with Zillow data?"
+          title="Ready to transform your direct mail with Real Estate Valuation Data?"
           description="Schedule a free strategy call to learn how our data enrichment services can boost your campaign results."
           buttonText="Book Your Free Strategy Call"
           imageSrc="/images/cta-illustration.png"
@@ -394,7 +394,7 @@ export default function Home() {
               <div className="text-2xl font-bold mb-6 flex items-center">
                 <span className="text-[#B9FF66] mr-1">&gt;</span>Precision Data
               </div>
-              <p className="text-gray-700 mb-4">Zillow data enrichment for targeted direct mail campaigns.</p>
+              <p className="text-gray-700 mb-4">Real estate valuation data enrichment for targeted direct mail campaigns.</p>
             </div>
             <div>
               <h4 className="text-lg font-medium mb-6">Company</h4>
@@ -413,7 +413,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-gray-300 pt-8 text-center md:text-left md:flex md:justify-between md:items-center text-gray-600">
-            <p> 2023 Precision Data. All rights reserved.</p>
+            <p> 2025 Precision Data. All rights reserved.</p>
             <div className="mt-4 md:mt-0 space-x-6">
               <a href="/terms-of-use" target="_blank" className="text-gray-600 hover:text-primary transition-colors">Terms of Use</a>
               <a href="/privacy-policy" target="_blank" className="text-gray-600 hover:text-primary transition-colors">Privacy Policy</a>
